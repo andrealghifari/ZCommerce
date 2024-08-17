@@ -24,13 +24,23 @@ const CartMenu = () => {
   const cart = useSelector((state) => state.cart.cart);
   const isCartOpen = useSelector((state) => state.cart.isCartOpen);
   const totalPrice = cart.reduce((total, item) => {
-    return total + item.count * item.attributes.price;
+    return total + item?.count * item?.attributes?.price;
   }, 0);
+  console.log(cart);
+
+  // function to handle rich text content
+  const getTextContent = (richText) => {
+    return richText.map((paragraph, index) =>
+      paragraph.children.map((child, idx) => (
+        <span key={`${index} - ${idx}`}> {child.text}</span>
+      ))
+    );
+  };
   return (
     // This below is overlay display that looked below the modals
     <Box
       display={isCartOpen ? "block" : "none"}
-      backgroundColor="rgba(0,0,0,.4)"
+      backgroundColor="rgba(0,0,0,.5)"
       position="fixed"
       zIndex="10"
       width="100%"
@@ -52,7 +62,7 @@ const CartMenu = () => {
         <Box padding="30px" overflow="auto" height="100%">
           {/* HEADER */}
           <FlexBox mb={"15px"}>
-            <Typography variant="h3">SHOPPING BAG ({cart.length})</Typography>
+            <Typography variant="h3">SHOPPING BAG ({cart?.length})</Typography>
             <IconButton onClick={() => dispatch(setIsCartOpen({}))}>
               <CloseIcon />
             </IconButton>
@@ -60,7 +70,8 @@ const CartMenu = () => {
           {/* CART LIST */}
           <Box>
             {cart.map((item) => (
-              <Box key={`${item.attributes.name} - ${item.attributes.id}`}>
+              // console.log(`map item: `, item),
+              <Box key={`${item?.attributes?.name} - ${item?.id}`}>
                 <FlexBox p={"15px 0"}>
                   <Box flex={"1 1 40%"}>
                     <img
@@ -74,17 +85,19 @@ const CartMenu = () => {
                     {/* ITEM NAME */}
                     <FlexBox mb="5px">
                       <Typography fontWeight="bold">
-                        {item.attributes.name}
+                        {item?.attributes?.name}
                       </Typography>
                       <IconButton
                         onClick={() =>
-                          dispatch(removeFromCart({ id: item.id }))
+                          dispatch(removeFromCart({ id: item?.id }))
                         }
                       >
                         <CloseIcon />
                       </IconButton>
                     </FlexBox>
-                    <Typography>{item.attributes.shortDescription}</Typography>
+                    <Typography>
+                      {getTextContent(item?.attributes?.shortDescription)}
+                    </Typography>
 
                     {/* AMOUNT */}
                     <FlexBox m={"15px 0"}>
@@ -95,7 +108,7 @@ const CartMenu = () => {
                       >
                         <IconButton
                           onClick={() =>
-                            dispatch(decreaseCount({ id: item.id }))
+                            dispatch(decreaseCount({ id: item?.id }))
                           }
                         >
                           <RemoveIcon />
@@ -103,16 +116,14 @@ const CartMenu = () => {
                         <Typography>{item.count}</Typography>
                         <IconButton
                           onClick={() =>
-                            dispatch(increaseCount({ id: item.id }))
+                            dispatch(increaseCount({ id: item?.id }))
                           }
                         >
                           <AddIcon />
                         </IconButton>
                       </Box>
                       {/* PRICE */}
-                      <Typography fontWeight="bold">
-                        {item.attributes.price}
-                      </Typography>
+                      <Typography fontWeight="bold">{item?.price}</Typography>
                     </FlexBox>
                   </Box>
                 </FlexBox>
