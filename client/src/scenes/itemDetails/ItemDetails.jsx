@@ -18,17 +18,17 @@ const ItemDetails = () => {
   const [item, setItem] = useState({});
   const [items, setItems] = useState([]);
   const [checkImg, setCheckImg] = useState("");
-
+  const [randomItems, setRandomItems] = useState([]);
   // FUNCTIONS
   //fn handleChange to control value of tabs
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
   const getItem = async () => {
-    const dataItem = await api
+    await api
       .get(`/api/items/${id}?populate=image`)
       .then((response) => {
-        console.log(response.data.data);
+        // console.log(response.data.data);
         setItem(response.data.data);
         setCheckImg(
           response.data.data.attributes?.image?.data?.attributes?.formats
@@ -38,7 +38,7 @@ const ItemDetails = () => {
       .catch((error) => console.error(error));
   };
   const getItems = async () => {
-    const dataItems = await api
+    await api
       .get(`/api/items?populate=image`)
       .then((response) => {
         // console.log(response.data.data);
@@ -57,21 +57,28 @@ const ItemDetails = () => {
   };
 
   //function to generate 4 random numbs for related products items
-  const getRandomIndices = (max, count) => {
-    const indices = new Set();
-    while (indices < count) {
-      const randomIndex = Math.floor(Math.random() * max);
-      indices.add(randomIndex);
+  const getRandomItems = () => {
+    if (items.length > 0) {
+      const indices = new Set();
+      while (indices.size < 4) {
+        const randomIndex = Math.floor(Math.random() * items.length);
+        indices.add(randomIndex);
+      }
+      const randomIndex = [...indices].map((index) => items[index])
+      setRandomItems(randomIndex);
     }
 
-    return [...indices];
   };
-  const randomIndices = getRandomIndices(items.length, 4);
-  const randomItems = randomIndices.map((index) => items[index]);
+  useEffect(() => {
+    getRandomItems();
+  }, [items]);
+
   useEffect(() => {
     getItem();
     getItems();
   }, [id]);
+
+//   console.log(randomItems)
 
   return (
     <Box width="80%" m="80px auto">
@@ -178,9 +185,9 @@ const ItemDetails = () => {
           columnGap="1.33%"
           justifyContent="space-between"
         >
-          {randomItems.map((item, index) => (
+          {randomItems.map((item, i) => (
             <Item
-              key={`${item?.attributes?.name} - ${index}`}
+              key={`${item?.attributes?.name}-${i}`}
               item={item}
               width="200px"
               height="300px"

@@ -26,7 +26,6 @@ const CartMenu = () => {
   const totalPrice = cart.reduce((total, item) => {
     return total + item?.count * item?.attributes?.price;
   }, 0);
-  console.log(cart);
 
   // function to handle rich text content
   const getTextContent = (richText) => {
