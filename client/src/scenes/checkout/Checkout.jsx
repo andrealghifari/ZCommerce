@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  getListItemSecondaryActionClassesUtilityClass,
   Step,
   StepLabel,
   Stepper,
@@ -13,11 +12,15 @@ import * as yup from "yup"; //validation library for form
 import { shades } from "../../theme";
 import Shipping from "./Shipping";
 import Payment from "./Payment";
-import { apiBackend } from "../../services/api";
-
+import api, { apiBackend } from "../../services/api";
+import { loadStripe } from "@stripe/stripe-js";
+const stripePromise = loadStripe(
+  `pk_test_51PqdxF04wOZ1AoiC7zshGao3jaq2BYcqCL0jz8gzEEtFR78aChghcTRzhDgUx9Ii0BKkY1V9sJIGtK6DractCTBb00ZGPhBMad`
+);
 const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [validate, setValidate] = useState([]);
+  const [sessionStripe, setSessionStripe] = useState({});
   const cart = useSelector((state) => state.cart.cart);
   const isFirstStep = activeStep === 0;
   const isSecondStep = activeStep === 1;
@@ -31,40 +34,71 @@ const Checkout = () => {
         ...values.billingAddress,
         isSameAddress: true,
       });
-
-      apiBackend
-        .post("/api/validate/checkout", {
-          valueBilling: values?.billingAddress,
-          valueShipping: values?.shippingAddress,
-        })
-        .then((response) => console.log(response))
-        .catch((error) => {
-          console.error(error);
-          setValidate(error.response.data.errror);
-        });
+      // apiBackend
+      //   .post("/api/validate/checkout", {
+      //     valueBilling: values?.billingAddress,
+      //     valueShipping: values?.shippingAddress,
+      //   })
+      //   .then((response) => console.log(response))
+      //   .catch((error) => {
+      //     console.error(error);
+      //     setValidate(error.response.data.errror);
+      //   });
     }
-    // console.log(`values in handleFormSubmit : `, values);
+    console.log(`values in handleFormSubmit : `, values);
     if (isSecondStep) {
-      apiBackend
-        .post("/api/validate/checkout", {
-          valueBilling: values?.billingAddress,
-          valueShipping: values?.shippingAddress,
-          email: values?.email,
-          phoneNumber: values?.phoneNumber,
-        })
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.error(error);
-          setValidate(error.response.data.errror);
-        });
-      makePayment();
+      // apiBackend
+      //   .post("/api/validate/checkout", {
+      //     valueBilling: values?.billingAddress,
+      //     valueShipping: values?.shippingAddress,
+      //     email: values?.email,
+      //     phoneNumber: values?.phoneNumber,
+      //   })
+      //   .then((response) => {
+      //     console.log(response);
+      //   })
+      //   .catch((error) => {
+      //     console.error(error);
+      //     setValidate(error.response.data.errror);
+      //   });
+      makePayment(values);
     }
     actions.setTouched({});
   };
-  async function makePayment(values) {}
+  async function makePayment(values) {
+    const stripe = await stripePromise;
+    const requestBody = {
+      data: {
+        userName: [
+          values.billingAddress.firstName,
+          values.billingAddress.lastName,
+        ].join(" "),
+        email: values.email,
+        products: cart.map(({ id, count }) => ({
+          id,
+          count,
+        })),
+      },
+    };
+
+    console.log(`Request Body value`, requestBody);
+
+    await api
+      .post(`/api/orders`, requestBody)
+      .then((response) => {
+        console.log(`hit api orders result : `, response);
+        setSessionStripe(response.data.data);
+      })
+      .catch((error) => console.error(error));
+
+    await stripe.redirectToCheckout({
+      sessionId: sessionStripe.id,
+    });
+  }
+
   console.log(validate);
+  console.log(`Session Value : `, sessionStripe);
+
   return (
     <Box width="80%" margin="80px auto">
       <Stepper activeStep={activeStep} sx={{ margin: "20px 0" }}>

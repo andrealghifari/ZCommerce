@@ -5,12 +5,12 @@ import App from "./App";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { theme } from "./theme";
 import { Provider } from "react-redux";
-import { configureStore, createReducer } from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
 import cardReducer from "./state";
-const root = ReactDOM.createRoot(document.getElementById("root"));
 const store = configureStore({
   reducer: { cart: cardReducer },
 });
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
