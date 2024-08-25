@@ -1,10 +1,4 @@
-import {
-  Box,
-  Button,
-  Step,
-  StepLabel,
-  Stepper,
-} from "@mui/material";
+import { Box, Button, Step, StepLabel, Stepper } from "@mui/material";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Formik } from "formik";
@@ -15,12 +9,11 @@ import Payment from "./Payment";
 import api, { apiBackend } from "../../services/api";
 import { loadStripe } from "@stripe/stripe-js";
 const stripePromise = loadStripe(
-  `pk_test_51PqdxF04wOZ1AoiC7zshGao3jaq2BYcqCL0jz8gzEEtFR78aChghcTRzhDgUx9Ii0BKkY1V9sJIGtK6DractCTBb00ZGPhBMad`
+  "pk_test_51PqdxF04wOZ1AoiC7zshGao3jaq2BYcqCL0jz8gzEEtFR78aChghcTRzhDgUx9Ii0BKkY1V9sJIGtK6DractCTBb00ZGPhBMad"
 );
 const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [validate, setValidate] = useState([]);
-  const [sessionStripe, setSessionStripe] = useState({});
   const cart = useSelector((state) => state.cart.cart);
   const isFirstStep = activeStep === 0;
   const isSecondStep = activeStep === 1;
@@ -87,17 +80,14 @@ const Checkout = () => {
       .post(`/api/orders`, requestBody)
       .then((response) => {
         console.log(`hit api orders result : `, response);
-        setSessionStripe(response.data.data);
+
+        const sessionId = response.data.id;
+        stripe.redirectToCheckout({
+          sessionId: sessionId,
+        });
       })
       .catch((error) => console.error(error));
-
-    await stripe.redirectToCheckout({
-      sessionId: sessionStripe.id,
-    });
   }
-
-  console.log(validate);
-  console.log(`Session Value : `, sessionStripe);
 
   return (
     <Box width="80%" margin="80px auto">

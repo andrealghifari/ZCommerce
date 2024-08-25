@@ -1,5 +1,5 @@
 const Confirmation = () => {
-    return <div>Confirmation</div>
+    return <div>Transaction completed, Thank you</div>
 }
 
 export default Confirmation;
